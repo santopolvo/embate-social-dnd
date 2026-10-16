@@ -1,0 +1,36 @@
+name: Release do módulo
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ajusta module.json (versão e URLs) a partir da tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          REPO="${GITHUB_REPOSITORY}"
+          jq --arg v "$VERSION" --arg r "$REPO" --arg t "$GITHUB_REF_NAME" '
+            .version = $v
+            | .url = "https://github.com/\($r)"
+            | .manifest = "https://github.com/\($r)/releases/latest/download/module.json"
+            | .download = "https://github.com/\($r)/releases/download/\($t)/embate-social.zip"
+          ' module.json > module.tmp && mv module.tmp module.json
+
+      - name: Gera o zip do módulo
+        run: |
+          mkdir -p /tmp/pkg/embate-social
+          rsync -a --exclude='.git' --exclude='.github' --exclude='tests' ./ /tmp/pkg/embate-social/
+          (cd /tmp/pkg && zip -rq "$GITHUB_WORKSPACE/embate-social.zip" embate-social)
+
+      - name: Publica a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" module.json embate-social.zip --title "$GITHUB_REF_NAME" --notes "Embate Social $GITHUB_REF_NAME"
