@@ -1,0 +1,259 @@
+<section class="es-root">
+  <header class="es-header">
+    <img class="es-portrait" src="{{actor.img}}" alt="">
+    <div class="es-title">
+      <h1>{{actor.name}}</h1>
+      <p>{{#if isNpc}}NPC · {{stats.tier.label}}{{else}}Nível {{nivel}} · Embate Social{{/if}}</p>
+    </div>
+    <div class="es-quick">
+      <div class="es-chip"><span>Compostura</span><strong>{{compostura.atual}}<small>/{{compostura.max}}</small></strong></div>
+      <div class="es-chip"><span>Resolução</span><strong>{{resolucao}}</strong></div>
+      {{#unless isNpc}}<div class="es-chip"><span>Abalo</span><strong>{{stats.abaloDados}}d6</strong></div>{{/unless}}
+    </div>
+  </header>
+
+  <nav class="es-tabs">
+    <a data-action="tab" data-tab="resumo" class="{{#if tabResumo}}active{{/if}}"><i class="fa-solid fa-gauge-high"></i> Resumo</a>
+    {{#unless isNpc}}
+    <a data-action="tab" data-tab="acoes" class="{{#if tabAcoes}}active{{/if}}"><i class="fa-solid fa-comments"></i> Ações</a>
+    <a data-action="tab" data-tab="gambitos" class="{{#if tabGambitos}}active{{/if}}"><i class="fa-solid fa-chess-knight"></i> Gambitos</a>
+    <a data-action="tab" data-tab="origem" class="{{#if tabOrigem}}active{{/if}}"><i class="fa-solid fa-landmark"></i> Origem</a>
+    {{/unless}}
+  </nav>
+
+  <div class="es-body">
+
+  {{!-- ============================ RESUMO ============================ --}}
+  {{#if tabResumo}}
+  <div class="es-grid">
+    <div class="es-card es-wide">
+      <h2>Compostura <small>a vida social</small></h2>
+      <div class="es-bar"><div class="es-fill" style="width: {{compostura.pct}}%"></div><span>{{compostura.atual}} / {{compostura.max}}</span></div>
+      <div class="es-row">
+        <label>Atual <input type="number" name="flags.embate-social.compostura" value="{{compostura.atual}}" min="0" max="{{compostura.max}}"></label>
+        <label>Valor <input type="number" name="amount" value="1" min="1"></label>
+        <button type="button" data-action="sofrer"><i class="fa-solid fa-burst"></i> Sofrer Abalo</button>
+        <button type="button" data-action="curar"><i class="fa-solid fa-heart"></i> Recuperar</button>
+        <button type="button" data-action="novoEmbate" title="Compostura cheia e usos &quot;por Embate&quot; renovados"><i class="fa-solid fa-rotate"></i> Novo Embate</button>
+      </div>
+      <ul class="es-parts">
+        {{#each compostura.partes}}<li><span>{{label}}</span><b>{{fmt}}</b></li>{{/each}}
+      </ul>
+    </div>
+
+    <div class="es-card">
+      <h2>Resolução</h2>
+      <div class="es-big">{{resolucao}}</div>
+      <p class="es-sub">CD para te atingir socialmente.</p>
+      {{#unless isNpc}}<p class="es-sub">Base {{resolucaoBase}} · com Manter a Pose {{resolucaoPose}}</p>{{/unless}}
+      {{#if resolucaoLinhagem}}<p class="es-sub">Linhagem (contra Rank menor): <b>{{resolucaoLinhagem}}</b></p>{{/if}}
+      <label class="es-check"><input type="checkbox" name="flags.embate-social.pose" {{#if poseAtiva}}checked{{/if}}> Manter a Pose ativa</label>
+    </div>
+
+    {{#unless isNpc}}
+    <div class="es-card">
+      <h2>Abalo</h2>
+      <div class="es-big">{{stats.abaloDados}}d6</div>
+      <p class="es-sub">+ modificador do atributo da perícia usada. O valor exato aparece em cada Ação.</p>
+      <h2 class="es-mt">Pontos de Retórica</h2>
+      <div class="es-row">
+        <input class="es-num" type="number" name="flags.embate-social.pr" value="{{pr.atual}}" min="0" max="{{pr.max}}"> <span>/ {{pr.max}}</span>
+      </div>
+      <p class="es-sub">Recuperam no Descanso curto.</p>
+    </div>
+
+    <div class="es-card">
+      <h2>Compostura: atributo mental</h2>
+      <p class="es-sub">O documento diz "INT/SAB". Escolha qual entra na conta.</p>
+      <select name="flags.embate-social.atributoMental">
+        {{#each mentalOpcoes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+    </div>
+    {{else}}
+    <div class="es-card">
+      <h2>Tipo de NPC</h2>
+      <select name="flags.embate-social.tier">
+        {{#each tierOpcoes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+      <p class="es-sub">Define Compostura e Resolução pela tabela do documento.</p>
+    </div>
+    <div class="es-card es-wide">
+      <h2>Valor e Medo</h2>
+      <label>Valor <input type="text" name="flags.embate-social.marca.valor" value="{{marca.valor}}"></label>
+      <label>Medo <input type="text" name="flags.embate-social.marca.medo" value="{{marca.medo}}"></label>
+    </div>
+    {{/unless}}
+
+    <div class="es-card es-wide">
+      <h2>Defesas por tipo de Abalo</h2>
+      <div class="es-defs">
+        {{#each defesas}}
+        <label class="es-def es-{{estado}}">
+          <span>{{label}}</span>
+          <select name="flags.embate-social.defesas.{{tipo}}">
+            {{#each opcoes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+          <small>{{estadoLabel}}</small>
+        </label>
+        {{/each}}
+      </div>
+      <p class="es-sub">"Automático" usa a Origem (Cicatrizes e Resistências). Escolha outro valor para sobrescrever.</p>
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- ============================ AÇÕES ============================ --}}
+  {{#if tabAcoes}}
+  <div class="es-card es-toolbar">
+    <h2>Modificadores da rolagem <small>valem para o próximo clique</small></h2>
+    <div class="es-mods">
+      <label><input type="checkbox" name="ui.vantagem" {{#if ui.vantagem}}checked{{/if}}> Vantagem</label>
+      <label><input type="checkbox" name="ui.desvantagem" {{#if ui.desvantagem}}checked{{/if}}> Desvantagem</label>
+      <label><input type="checkbox" name="ui.circulo" {{#if ui.circulo}}checked{{/if}}> Círculo Natal +2</label>
+      <label><input type="checkbox" name="ui.valor" {{#if ui.valor}}checked{{/if}}> Defendo meu Valor +2</label>
+      <label><input type="checkbox" name="ui.dom" {{#if ui.dom}}checked{{/if}}> Dom de Origem +2</label>
+      <label><input type="checkbox" name="ui.cicatriz" {{#if ui.cicatriz}}checked{{/if}}> Cicatriz −2</label>
+      <label><input type="checkbox" name="ui.medo" {{#if ui.medo}}checked{{/if}}> Atingi o Medo do alvo (+1d6)</label>
+      <label><input type="checkbox" name="ui.dobrar" {{#if ui.dobrar}}checked{{/if}}> Frase de Efeito (Abalo ×2)</label>
+      <label><input type="checkbox" name="ui.maximo" {{#if ui.maximo}}checked{{/if}}> Verdade Incômoda (Abalo máximo)</label>
+      <label class="es-extra">Bônus extra <input type="number" name="ui.extra" value="{{ui.extra}}"></label>
+    </div>
+    <p class="es-sub">Selecione o token do alvo antes de rolar para comparar com a Resolução dele e aplicar Vulnerabilidade, Resistência e Imunidade.</p>
+  </div>
+
+  <h2 class="es-section">Ações</h2>
+  <div class="es-list">
+    {{#each acoes}}
+    <div class="es-item">
+      <div class="es-item-head"><b>{{nome}}</b><span class="es-tag">{{tipo}}</span></div>
+      {{#if texto}}<p>{{texto}}</p>{{/if}}
+      <div class="es-btns">
+        {{#each pericias}}
+        <button type="button" data-action="rollAcao" data-id="{{../id}}" data-skill="{{key}}"><i class="fa-solid fa-dice-d20"></i> {{label}} {{bonusFmt}} · Abalo {{abalo}}</button>
+        {{/each}}
+      </div>
+    </div>
+    {{/each}}
+  </div>
+
+  <h2 class="es-section">Ações de Apoio</h2>
+  <div class="es-list">
+    {{#each apoio}}
+    <div class="es-item">
+      <div class="es-item-head"><b>{{nome}}</b>{{#if once}}<span class="es-tag">1× por Embate</span>{{/if}}</div>
+      <p>{{texto}}</p>
+      {{#if isCheck}}<div class="es-btns"><button type="button" data-action="rollCheck"><i class="fa-solid fa-dice-d20"></i> Intuição {{bonusFmt}}</button></div>{{/if}}
+      {{#if isRecompor}}<div class="es-btns"><button type="button" data-action="recompor" {{#if usado}}disabled{{/if}}><i class="fa-solid fa-leaf"></i> Recompor-se ({{recomporFormula}}){{#if usado}} — usado{{/if}}</button></div>{{/if}}
+    </div>
+    {{/each}}
+  </div>
+
+  <h2 class="es-section">Reações</h2>
+  <div class="es-list">
+    {{#each reacoes}}
+    <div class="es-item"><div class="es-item-head"><b>{{nome}}</b></div><p>{{texto}}</p></div>
+    {{/each}}
+  </div>
+
+  <h2 class="es-section">Defesas</h2>
+  <div class="es-list">
+    <div class="es-item"><div class="es-item-head"><b>Resolução</b><span class="es-tag">{{resolucao}}</span></div><p>Sua defesa passiva, sempre ligada.</p></div>
+    <div class="es-item">
+      <div class="es-item-head"><b>Manter a Pose</b><span class="es-tag">Resolução {{resolucaoPose}}</span></div>
+      <p>Gasta sua Ação para ganhar +4 de Resolução até o próximo turno (já somado o +2 do Dom de Raízes no Ermo, se você o tem).</p>
+      <label class="es-check"><input type="checkbox" name="flags.embate-social.pose" {{#if poseAtiva}}checked{{/if}}> Ativa agora</label>
+    </div>
+    <div class="es-item">
+      <div class="es-item-head"><b>Vulnerabilidade, Resistência e Imunidade</b></div>
+      <p>Por tipo de Abalo: Vulnerável = dobrado; Resistente = metade; Imune = nenhum.</p>
+      <div class="es-tags">
+        {{#each defesas}}<span class="es-tag es-{{estado}}">{{label}}: {{estadoLabel}}</span>{{/each}}
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- ============================ GAMBITOS ============================ --}}
+  {{#if tabGambitos}}
+  <div class="es-card es-wide">
+    <h2>Gambitos <small>{{gambitosContagem.escolhidos}} de {{gambitosContagem.permitidos}} escolhidos</small></h2>
+    <p class="es-sub">1 Gambito no nível 1 e mais 1 nos níveis 3, 5, 9, 13 e 17. Pontos de Retórica: <b>{{pr.atual}} / {{pr.max}}</b>.</p>
+  </div>
+  <div class="es-list">
+    {{#each gambitos}}
+    <div class="es-item es-gambito {{#if escolhido}}es-on{{/if}}">
+      <div class="es-item-head">
+        <label class="es-check"><input type="checkbox" name="flags.embate-social.gambitos.{{id}}" {{#if escolhido}}checked{{/if}}> <b>{{nome}}</b></label>
+        <span class="es-tag">{{custo}} PR</span>
+      </div>
+      <p>{{texto}}</p>
+      {{#if escolhido}}
+      <div class="es-btns"><button type="button" data-action="usarGambito" data-id="{{id}}" {{#unless podeUsar}}disabled{{/unless}}><i class="fa-solid fa-bolt"></i> Usar{{#if usado}} — já usado{{/if}}</button></div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================ ORIGEM ============================ --}}
+  {{#if tabOrigem}}
+  <div class="es-card es-wide">
+    <h2>Monte sua Origem</h2>
+    <div class="es-form">
+      <label><span>1. Berço <small>em que degrau você nasceu</small></span>
+        <select name="flags.embate-social.origem.berco">{{#each origem.bercos}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+      <label><span>2. Raízes <small>onde você foi criado</small></span>
+        <select name="flags.embate-social.origem.raizes">{{#each origem.raizes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+      <label><span>3. Trajetória <small>o que mudou desde então</small></span>
+        <select name="flags.embate-social.origem.trajetoria">{{#each origem.trajetorias}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+      <label><span>Círculo "familiar" <small>Dois mundos, Sem problemas</small></span>
+        <input type="text" name="flags.embate-social.origem.circuloFamiliar" value="{{origem.circuloFamiliar}}"></label>
+    </div>
+    <ul class="es-parts">
+      <li><span>Rank real</span><b>{{origem.rankReal}}</b></li>
+      <li><span>Rank em vigor</span><b>{{origem.rankEfetivo}}</b></li>
+      <li><span>Círculo Natal em vigor</span><b>{{origem.circulo}}</b></li>
+    </ul>
+    {{#each origem.avisos}}<p class="es-aviso"><i class="fa-solid fa-triangle-exclamation"></i> {{this}}</p>{{/each}}
+  </div>
+
+  <div class="es-card es-wide">
+    <h2>4. Marca <small>o que a origem fez com você</small></h2>
+    <div class="es-form">
+      <label><span>Valor <small>defender dá +2 na rolagem</small></span><input type="text" name="flags.embate-social.marca.valor" value="{{marca.valor}}" placeholder="a palavra dada, minha família..."></label>
+      <label><span>Medo <small>quem atinge causa +1d6 de Abalo</small></span><input type="text" name="flags.embate-social.marca.medo" value="{{marca.medo}}" placeholder="voltar à miséria, ser descoberto..."></label>
+    </div>
+  </div>
+
+  <div class="es-card es-wide">
+    <h2>Origem Oculta</h2>
+    <label class="es-check"><input type="checkbox" name="flags.embate-social.origem.oculta" {{#if origem.oculta}}checked{{/if}}> Segredo guardado (uso Rank e Círculo da Origem Declarada)</label>
+    <div class="es-form">
+      <label><span>Rank declarado</span>
+        <select name="flags.embate-social.origem.rankDeclarado">{{#each origem.ranksDeclarados}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+      <label><span>Círculo declarado</span><input type="text" name="flags.embate-social.origem.circuloDeclarado" value="{{origem.circuloDeclarado}}"></label>
+    </div>
+    <p class="es-sub">Enquanto o segredo estiver guardado, os Dons da Origem Real ficam suspensos. Se alguém Expor sua origem, desmarque a caixa e aplique o Abalo de Verdade (2 × proficiência) pelo botão "Sofrer Abalo".</p>
+  </div>
+
+  <h2 class="es-section">Dons <small>vantagens da Origem</small></h2>
+  <div class="es-list">
+    {{#each origem.dons}}
+    <div class="es-item {{#unless ativo}}es-off{{/unless}}">
+      <div class="es-item-head"><b>{{nome}}</b><span class="es-tag">{{fonte}}</span>{{#unless ativo}}<span class="es-tag es-warn">suspenso</span>{{/unless}}</div>
+      <p>{{texto}}</p>
+      {{#if once}}<label class="es-check"><input type="checkbox" name="flags.embate-social.usados.{{id}}" {{#if usado}}checked{{/if}}> Já usei neste Embate</label>{{/if}}
+    </div>
+    {{else}}<p class="es-sub">Escolha Berço, Raízes e Trajetória para ver seus Dons.</p>{{/each}}
+  </div>
+
+  <h2 class="es-section">Cicatrizes <small>fraquezas da Origem (não acumulam; teto −2 por Círculo)</small></h2>
+  <div class="es-list">
+    {{#each origem.cicatrizes}}
+    <div class="es-item"><div class="es-item-head"><span class="es-tag">{{fonte}}</span></div><p>{{texto}}</p></div>
+    {{else}}<p class="es-sub">Nenhuma Cicatriz por enquanto.</p>{{/each}}
+  </div>
+  {{/if}}
+
+  </div>
+</section>
